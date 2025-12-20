@@ -57,7 +57,7 @@ func NewServicesListCmd() *cobra.Command {
 			// List services
 			services, err := listServices(clientset, namespace)
 			if err != nil {
-				return fmt.Errorf("failed to list services: %v", err)
+				return fmt.Errorf("failed to connect to Kubernetes cluster: %v\n\nMake sure your cluster is running and accessible. Check your kubeconfig with: kubectl cluster-info", err)
 			}
 
 			// Display services
