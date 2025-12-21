@@ -264,9 +264,6 @@ Contributions are welcome! Please ensure:
 - Tests are included for new features
 - Documentation is updated
 
-## License
-
-[Specify your license here]
 
 ## Support
 
