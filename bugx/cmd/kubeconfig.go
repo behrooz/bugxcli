@@ -28,4 +28,3 @@ func getKubeconfigPath(flagPath string) string {
 
 	return ""
 }
-

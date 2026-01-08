@@ -73,7 +73,6 @@ func NewServicesListCmd() *cobra.Command {
 	return cmd
 }
 
-
 // listServices lists all services in a namespace
 func listServices(clientset *kubernetes.Clientset, namespace string) ([]ServiceInfo, error) {
 	services, err := clientset.CoreV1().Services(namespace).List(context.TODO(), metav1.ListOptions{})
@@ -153,4 +152,3 @@ func displayServices(services []ServiceInfo, namespace string) {
 	fmt.Println()
 	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 }
-

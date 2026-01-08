@@ -72,4 +72,3 @@ func NewDisconnectCmd() *cobra.Command {
 
 	return cmd
 }
-

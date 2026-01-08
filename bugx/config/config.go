@@ -43,7 +43,7 @@ func (c *Config) SaveToken(token string) error {
 	}
 
 	tokenPath := filepath.Join(c.configDir, tokenFileName)
-	
+
 	// Set restrictive permissions (owner read/write only)
 	file, err := os.OpenFile(tokenPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
@@ -58,7 +58,7 @@ func (c *Config) SaveToken(token string) error {
 // LoadToken loads the authentication token
 func (c *Config) LoadToken() (string, error) {
 	tokenPath := filepath.Join(c.configDir, tokenFileName)
-	
+
 	data, err := os.ReadFile(tokenPath)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -73,7 +73,7 @@ func (c *Config) LoadToken() (string, error) {
 // RemoveToken removes the saved token
 func (c *Config) RemoveToken() error {
 	tokenPath := filepath.Join(c.configDir, tokenFileName)
-	
+
 	if _, err := os.Stat(tokenPath); os.IsNotExist(err) {
 		return nil // Token doesn't exist, nothing to remove
 	}
@@ -140,7 +140,7 @@ func (c *Config) loadConfig() (map[string]interface{}, error) {
 	}
 
 	configPath := filepath.Join(c.configDir, configFileName)
-	
+
 	data, err := os.ReadFile(configPath)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -164,7 +164,7 @@ func (c *Config) saveConfig(cfg map[string]interface{}) error {
 	}
 
 	configPath := filepath.Join(c.configDir, configFileName)
-	
+
 	data, err := json.MarshalIndent(cfg, "", "  ")
 	if err != nil {
 		return err
@@ -183,4 +183,3 @@ func (c *Config) GetConfigDir() string {
 func GetOS() string {
 	return runtime.GOOS
 }
-

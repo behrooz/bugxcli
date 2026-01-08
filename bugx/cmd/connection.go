@@ -39,7 +39,7 @@ func getConnectionsFile() string {
 // loadConnections loads all connections from the file
 func loadConnections() ([]ConnectionInfo, error) {
 	filePath := getConnectionsFile()
-	
+
 	// Create directory if it doesn't exist
 	dir := filepath.Dir(filePath)
 	if err := os.MkdirAll(dir, 0700); err != nil {
@@ -68,7 +68,7 @@ func loadConnections() ([]ConnectionInfo, error) {
 // saveConnections saves connections to the file
 func saveConnections(connections []ConnectionInfo) error {
 	filePath := getConnectionsFile()
-	
+
 	// Create directory if it doesn't exist
 	dir := filepath.Dir(filePath)
 	if err := os.MkdirAll(dir, 0700); err != nil {
@@ -155,4 +155,3 @@ func findConnection(serviceName, namespace string) (*ConnectionInfo, error) {
 
 	return nil, fmt.Errorf("connection not found")
 }
-

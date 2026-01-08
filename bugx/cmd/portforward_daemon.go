@@ -37,7 +37,7 @@ func runPortForwardDaemon(config *rest.Config, namespace, podName, localPort str
 		// Port-forward is ready
 		pid := os.Getpid()
 		fmt.Fprintf(os.Stderr, "Port-forward daemon started (PID: %d)\n", pid)
-		
+
 		// Set up signal handlers
 		sigChan := make(chan os.Signal, 1)
 		signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
@@ -92,5 +92,3 @@ func runPortForwardInGoroutineDaemon(config *rest.Config, namespace, podName, lo
 
 	return pf.ForwardPorts()
 }
-
-
