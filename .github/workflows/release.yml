@@ -67,8 +67,7 @@ jobs:
           CGO_ENABLED: 0
         run: |
           mkdir -p bin
-          cd bugxcli
-          OUTPUT_NAME="../bin/bugx-${{ matrix.os }}-${{ matrix.arch }}"
+          OUTPUT_NAME="bin/bugx-${{ matrix.os }}-${{ matrix.arch }}"
           if [ "${{ matrix.os }}" == "windows" ]; then
             OUTPUT_NAME="${OUTPUT_NAME}.exe"
           fi
@@ -174,4 +173,3 @@ jobs:
             release/checksums.txt
           draft: false
           prerelease: false
-

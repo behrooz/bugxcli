@@ -30,27 +30,16 @@ jobs:
             ${{ runner.os }}-go-
 
       - name: Download dependencies
-        run: |
-          cd bugxcli
-          go mod download
+        run: go mod download
 
       - name: Run tests
-        run: |
-          cd bugxcli
-          go test -v ./...
+        run: go test -v ./...
 
       - name: Build
-        run: |
-          cd bugxcli
-          go build -v ./bugx
+        run: go build -v ./bugx
 
       - name: Check formatting
-        run: |
-          cd bugxcli
-          test -z $(gofmt -l .)
+        run: test -z $(gofmt -l .)
 
       - name: Run vet
-        run: |
-          cd bugxcli
-          go vet ./...
-
+        run: go vet ./...
