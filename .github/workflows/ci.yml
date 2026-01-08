@@ -36,7 +36,10 @@ jobs:
         run: go test -v ./...
 
       - name: Build
-        run: go build -v ./bugx
+        run: |
+          # Build to verify compilation (output to temp location to avoid conflict with bugx/ directory)
+          go build -v -o /tmp/bugx-test ./bugx
+          rm -f /tmp/bugx-test
 
       - name: Check formatting
         run: test -z $(gofmt -l .)
