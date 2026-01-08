@@ -1,0 +1,177 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., v1.0.0)'
+        required: true
+        type: string
+
+env:
+  GO_VERSION: '1.25'
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - os: linux
+            arch: amd64
+            bin_name: bugx
+          - os: linux
+            arch: arm64
+            bin_name: bugx
+          - os: darwin
+            arch: amd64
+            bin_name: bugx
+          - os: darwin
+            arch: arm64
+            bin_name: bugx
+          - os: windows
+            arch: amd64
+            bin_name: bugx.exe
+          - os: windows
+            arch: arm64
+            bin_name: bugx.exe
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Get version from tag
+        id: get_version
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION=${GITHUB_REF#refs/tags/}
+          fi
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "Version: ${VERSION}"
+
+      - name: Build binary
+        env:
+          GOOS: ${{ matrix.os }}
+          GOARCH: ${{ matrix.arch }}
+          CGO_ENABLED: 0
+        run: |
+          mkdir -p bin
+          cd bugxcli
+          OUTPUT_NAME="../bin/bugx-${{ matrix.os }}-${{ matrix.arch }}"
+          if [ "${{ matrix.os }}" == "windows" ]; then
+            OUTPUT_NAME="${OUTPUT_NAME}.exe"
+          fi
+          go build -ldflags="-w -s" \
+            -o ${OUTPUT_NAME} \
+            ./bugx
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: bugx-${{ matrix.os }}-${{ matrix.arch }}
+          path: bin/bugx-${{ matrix.os }}-${{ matrix.arch }}${{ matrix.os == 'windows' && '.exe' || '' }}
+          retention-days: 30
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get version from tag
+        id: get_version
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION=${GITHUB_REF#refs/tags/}
+          fi
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "Version: ${VERSION}"
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Prepare release files
+        run: |
+          mkdir -p release
+          # Copy all binaries to release directory
+          find artifacts -type f -name 'bugx-*' -exec cp {} release/ \;
+          # Create checksums
+          cd release
+          find . -type f -name 'bugx-*' -exec sha256sum {} \; > checksums.txt
+          cat checksums.txt
+          ls -lh
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.get_version.outputs.version }}
+          name: Release ${{ steps.get_version.outputs.version }}
+          body: |
+            ## BugX CLI ${{ steps.get_version.outputs.version }}
+
+            ### Installation
+
+            Download the binary for your platform:
+
+            **Linux:**
+            ```bash
+            # AMD64
+            wget https://github.com/${{ github.repository }}/releases/download/${{ steps.get_version.outputs.version }}/bugx-linux-amd64
+            chmod +x bugx-linux-amd64
+            sudo mv bugx-linux-amd64 /usr/local/bin/bugx
+
+            # ARM64
+            wget https://github.com/${{ github.repository }}/releases/download/${{ steps.get_version.outputs.version }}/bugx-linux-arm64
+            chmod +x bugx-linux-arm64
+            sudo mv bugx-linux-arm64 /usr/local/bin/bugx
+            ```
+
+            **macOS:**
+            ```bash
+            # AMD64
+            wget https://github.com/${{ github.repository }}/releases/download/${{ steps.get_version.outputs.version }}/bugx-darwin-amd64
+            chmod +x bugx-darwin-amd64
+            sudo mv bugx-darwin-amd64 /usr/local/bin/bugx
+
+            # ARM64 (Apple Silicon)
+            wget https://github.com/${{ github.repository }}/releases/download/${{ steps.get_version.outputs.version }}/bugx-darwin-arm64
+            chmod +x bugx-darwin-arm64
+            sudo mv bugx-darwin-arm64 /usr/local/bin/bugx
+            ```
+
+            **Windows:**
+            - Download `bugx-windows-amd64.exe` or `bugx-windows-arm64.exe`
+            - Rename to `bugx.exe`
+            - Add to your PATH
+
+            ### Checksums
+            See `checksums.txt` for SHA256 checksums of all binaries.
+
+            ### What's Changed
+            - See [CHANGELOG](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details
+          files: |
+            release/bugx-*
+            release/checksums.txt
+          draft: false
+          prerelease: false
+
